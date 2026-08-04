@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema da Horta Escolar</title>
+<style>
+:root{
+  --bg:#f4f7f2;
+  --card:#ffffff;
+  --text:#1f2d1f;
+  --muted:#667766;
+  --accent:#2f7d32;
+  --accent2:#dff0df;
+  --danger:#b3261e;
+  --border:#d8e2d5;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+header{
+  background:linear-gradient(135deg,#2f7d32,#4f9f52);
+  color:#fff;
+  padding:22px 16px;
+}
+header h1{margin:0 0 6px;font-size:1.65rem}
+header p{margin:0;opacity:.95}
+.container{max-width:1100px;margin:auto;padding:16px}
+.tabs{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px
+}
+.tabs button{
+  border:0;background:#e7efe4;padding:10px 14px;border-radius:10px;
+  cursor:pointer;font-weight:700;color:#234223
+}
+.tabs button.active{background:var(--accent);color:white}
+.section{display:none}
+.section.active{display:block}
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px
+}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04)
+}
+.card h2,.card h3{margin-top:0}
+label{display:block;font-weight:700;margin:10px 0 6px}
+input,select,textarea{
+  width:100%;padding:10px;border:1px solid #bfcdbb;border-radius:8px;
+  font-size:1rem;background:#fff
+}
+textarea{min-height:90px;resize:vertical}
+button.primary,button.secondary,button.danger{
+  padding:10px 14px;border:0;border-radius:9px;font-weight:700;cursor:pointer;margin-top:12px
+}
+button.primary{background:var(--accent);color:#fff}
+button.secondary{background:#e7efe4;color:#234223}
+button.danger{background:var(--danger);color:#fff}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.kpis{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px
+}
+.kpi{
+  background:#fff;border-left:6px solid var(--accent);border-radius:12px;
+  padding:14px;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border)
+}
+.kpi strong{display:block;font-size:1.6rem}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{background:#edf5ea}
+.table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--border)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent2);font-size:.85rem}
+.muted{color:var(--muted)}
+.photo-preview{max-width:140px;max-height:100px;border-radius:8px;display:block;margin-top:8px}
+.empty{padding:20px;text-align:center;color:var(--muted)}
+footer{text-align:center;color:var(--muted);padding:25px 10px}
+@media print{
+  header,.tabs,.no-print,footer{display:none!important}
+  body{background:#fff}
+  .section{display:none!important}
+  #relatorios{display:block!important}
+  .card{box-shadow:none;border:0}
+}
+</style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2f7d32">
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>🌱 Sistema da Horta Escolar</h1>
+    <p>Cadastro de canteiros, grupos, registros diários, fotos e relatórios.</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs no-print">
+    <button class="active" data-tab="inicio">Início</button>
+    <button data-tab="canteiros">Canteiros</button>
+    <button data-tab="grupos">Grupos</button>
+    <button data-tab="registros">Registro diário</button>
+    <button data-tab="historico">Histórico</button>
+    <button data-tab="relatorios">Relatórios</button>
+  </div>
+
+  <section id="inicio" class="section active">
+    <div class="kpis">
+      <div class="kpi"><span>Canteiros</span><strong id="kpiCanteiros">0</strong></div>
+      <div class="kpi"><span>Grupos</span><strong id="kpiGrupos">0</strong></div>
+      <div class="kpi"><span>Registros</span><strong id="kpiRegistros">0</strong></div>
+      <div class="kpi"><span>Com pragas</span><strong id="kpiPragas">0</strong></div>
+    </div>
+    <div class="card">
+      <h2>Como usar</h2>
+      <p>1. Cadastre os canteiros e os grupos. 2. Faça o registro diário pelo celular. 3. Consulte o histórico. 4. Gere e imprima o relatório.</p>
+      <p class="muted">Os dados ficam salvos neste navegador. Para usar em outro aparelho, utilize “Exportar dados” e depois “Importar dados”.</p>
+      <div class="actions no-print">
+        <button class="secondary" onclick="exportarDados()">Exportar dados</button>
+        <label style="margin:0">
+          <input id="importFile" type="file" accept=".json" style="display:none" onchange="importarDados(event)">
+          <button class="secondary" type="button" onclick="document.getElementById('importFile').click()">Importar dados</button>
+        </label>
+        <button class="danger" onclick="limparTudo()">Apagar todos os dados (de todo mundo)</button>
+      </div>
+      <p id="statusConexao" class="muted no-print"></p>
+    </div>
+  </section>
+
+  <section id="canteiros" class="section">
+    <div class="grid">
+      <div class="card">
+        <h2>Novo canteiro</h2>
+        <form id="formCanteiro">
+          <label>Nome ou número</label>
+          <input id="canteiroNome" required placeholder="Ex.: Canteiro 1">
+          <label>Cultura plantada</label>
+          <input id="canteiroCultura" required placeholder="Ex.: Rúcula">
+          <label>Data do plantio</label>
+          <input id="canteiroData" type="date" required>
+          <label>Previsão de colheita</label>
+          <input id="canteiroColheita" type="date">
+          <label>Observações</label>
+          <textarea id="canteiroObs" placeholder="Informações importantes"></textarea>
+          <button class="primary" type="submit">Salvar canteiro</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Canteiros cadastrados</h2>
+        <div id="listaCanteiros"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="grupos" class="section">
+    <div class="grid">
+      <div class="card">
+        <h2>Novo grupo</h2>
+        <form id="formGrupo">
+          <label>Nome do grupo</label>
+          <input id="grupoNome" required placeholder="Ex.: Grupo Verde">
+          <label>Turma</label>
+          <input id="grupoTurma" required placeholder="Ex.: 1º A">
+          <label>Integrantes</label>
+          <textarea id="grupoIntegrantes" required placeholder="Digite os nomes, separados por vírgula"></textarea>
+          <label>Canteiro responsável</label>
+          <select id="grupoCanteiro"></select>
+          <button class="primary" type="submit">Salvar grupo</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Grupos cadastrados</h2>
+        <div id="listaGrupos"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="registros" class="section">
+    <div class="card">
+      <h2>Registro diário da horta</h2>
+      <form id="formRegistro">
+        <div class="grid">
+          <div>
+            <label>Data</label>
+            <input id="regData" type="date" required>
+          </div>
+          <div>
+            <label>Aluno responsável</label>
+            <input id="regAluno" required>
+          </div>
+          <div>
+            <label>Turma</label>
+            <input id="regTurma" required>
+          </div>
+          <div>
+            <label>Grupo</label>
+            <select id="regGrupo" required></select>
+          </div>
+          <div>
+            <label>Canteiro</label>
+            <select id="regCanteiro" required></select>
+          </div>
+          <div>
+            <label>Foi irrigado?</label>
+            <select id="regIrrigacao"><option>Sim</option><option>Não</option></select>
+          </div>
+          <div>
+            <label>Condição do solo</label>
+            <select id="regSolo"><option>Úmido</option><option>Seco</option><option>Encharcado</option></select>
+          </div>
+          <div>
+            <label>Houve crescimento?</label>
+            <select id="regCrescimento"><option>Sim</option><option>Não</option><option>Não foi possível observar</option></select>
+          </div>
+          <div>
+            <label>Altura aproximada (cm)</label>
+            <input id="regAltura" type="number" min="0" step="0.1">
+          </div>
+          <div>
+            <label>Há pragas ou doenças?</label>
+            <select id="regPragas"><option>Não</option><option>Sim</option></select>
+          </div>
+          <div>
+            <label>Foi feita capina?</label>
+            <select id="regCapina"><option>Não</option><option>Sim</option></select>
+          </div>
+          <div>
+            <label>Foi feita adubação?</label>
+            <select id="regAdubacao"><option>Não</option><option>Sim</option></select>
+          </div>
+        </div>
+        <label>Observações</label>
+        <textarea id="regObs" placeholder="Descreva o estado das plantas e os cuidados realizados"></textarea>
+        <label>Foto do canteiro (opcional)</label>
+        <input id="regFoto" type="file" accept="image/*" capture="environment">
+        <button class="primary" type="submit">Salvar registro</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="historico" class="section">
+    <div class="card">
+      <h2>Histórico de registros</h2>
+      <div class="grid no-print">
+        <div>
+          <label>Filtrar por canteiro</label>
+          <select id="filtroCanteiro" onchange="renderHistorico()"></select>
+        </div>
+        <div>
+          <label>Filtrar por grupo</label>
+          <select id="filtroGrupo" onchange="renderHistorico()"></select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th><th>Aluno</th><th>Grupo</th><th>Canteiro</th><th>Irrigação</th>
+              <th>Solo</th><th>Altura</th><th>Pragas</th><th>Observações</th><th>Foto</th><th class="no-print">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaHistorico"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="relatorios" class="section">
+    <div class="card">
+      <h2>Relatório da Horta Escolar</h2>
+      <div class="no-print">
+        <label>Selecionar canteiro</label>
+        <select id="relCanteiro" onchange="gerarRelatorio()"></select>
+        <button class="primary" onclick="window.print()">Imprimir / Salvar em PDF</button>
+      </div>
+      <div id="relatorioConteudo"></div>
+    </div>
+  </section>
+</div>
+
+<footer>Sistema local da Horta Escolar — dados armazenados no navegador.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://bilccbkavnlaodxkfywy.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpbGNjYmthdm5sYW9keGtmeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NjE3OTAsImV4cCI6MjEwMTQzNzc5MH0.7x8ojOayHbl8Hf1RCEpmz1GuU1vFVG0fD2pCZ-aj4U0';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let db = {canteiros:[],grupos:[],registros:[]};
+
+function hoje(){ return new Date().toISOString().slice(0,10); }
+document.getElementById('canteiroData').value = hoje();
+document.getElementById('regData').value = hoje();
+
+function setStatus(msg, isError){
+  const el = document.getElementById('statusConexao');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? '#b3261e' : '';
+}
+
+async function carregarDados(){
+  setStatus('Carregando dados da horta...');
+  const [c,g,r] = await Promise.all([
+    sb.from('canteiros').select('*').order('data',{ascending:false}),
+    sb.from('grupos').select('*').order('nome'),
+    sb.from('registros').select('*').order('data',{ascending:false})
+  ]);
+  const erro = c.error || g.error || r.error;
+  if(erro){ setStatus('Erro ao carregar dados: '+erro.message, true); return; }
+  db.canteiros = c.data || [];
+  db.grupos = g.data || [];
+  db.registros = r.data || [];
+  setStatus('');
+  atualizarTudo();
+}
+
+document.querySelectorAll('.tabs button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='relatorios') gerarRelatorio();
+  });
+});
+
+document.getElementById('formCanteiro').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const {error} = await sb.from('canteiros').insert({
+    nome:canteiroNome.value.trim(),
+    cultura:canteiroCultura.value.trim(),
+    data:canteiroData.value,
+    colheita:canteiroColheita.value||null,
+    obs:canteiroObs.value.trim()
+  });
+  if(error){ alert('Erro ao salvar canteiro: '+error.message); return; }
+  e.target.reset(); canteiroData.value=hoje();
+  await carregarDados();
+});
+
+document.getElementById('formGrupo').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const {error} = await sb.from('grupos').insert({
+    nome:grupoNome.value.trim(),
+    turma:grupoTurma.value.trim(),
+    integrantes:grupoIntegrantes.value.trim(),
+    canteiro_id:grupoCanteiro.value||null
+  });
+  if(error){ alert('Erro ao salvar grupo: '+error.message); return; }
+  e.target.reset();
+  await carregarDados();
+});
+
+document.getElementById('formRegistro').addEventListener('submit',async e=>{
+  e.preventDefault();
+  let foto='';
+  const file=regFoto.files[0];
+  if(file) foto=await comprimirImagem(file);
+  const {error} = await sb.from('registros').insert({
+    data:regData.value,
+    aluno:regAluno.value.trim(),
+    turma:regTurma.value.trim(),
+    grupo_id:regGrupo.value||null,
+    canteiro_id:regCanteiro.value||null,
+    irrigacao:regIrrigacao.value,
+    solo:regSolo.value,
+    crescimento:regCrescimento.value,
+    altura:regAltura.value||null,
+    pragas:regPragas.value,
+    capina:regCapina.value,
+    adubacao:regAdubacao.value,
+    obs:regObs.value.trim(),
+    foto
+  });
+  if(error){ alert('Erro ao salvar registro: '+error.message); return; }
+  e.target.reset(); regData.value=hoje();
+  await carregarDados();
+  alert('Registro salvo com sucesso.');
+});
+
+function comprimirImagem(file){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=900;
+        let w=img.width,h=img.height;
+        if(w>h && w>max){h=h*max/w;w=max}
+        else if(h>max){w=w*max/h;h=max}
+        const c=document.createElement('canvas'); c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/jpeg',0.72));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function nomeCanteiro(id){
+  const x=db.canteiros.find(c=>c.id===id); return x?`${x.nome} — ${x.cultura}`:'Não informado';
+}
+function nomeGrupo(id){
+  const x=db.grupos.find(g=>g.id===id); return x?x.nome:'Não informado';
+}
+function optionList(arr, labelFn, incluiTodos=false){
+  let html=incluiTodos?'<option value="">Todos</option>':'';
+  return html+arr.map(x=>`<option value="${x.id}">${labelFn(x)}</option>`).join('');
+}
+
+function renderCanteiros(){
+  listaCanteiros.innerHTML=db.canteiros.length?db.canteiros.map(c=>`
+    <div class="card" style="margin-bottom:10px">
+      <strong>${c.nome}</strong> <span class="badge">${c.cultura}</span>
+      <p class="muted">Plantio: ${formatData(c.data)} ${c.colheita?'| Colheita prevista: '+formatData(c.colheita):''}</p>
+      <p>${c.obs||''}</p>
+      <button class="danger no-print" onclick="excluirCanteiro('${c.id}')">Excluir</button>
+    </div>`).join(''):'<div class="empty">Nenhum canteiro cadastrado.</div>';
+}
+
+function renderGrupos(){
+  listaGrupos.innerHTML=db.grupos.length?db.grupos.map(g=>`
+    <div class="card" style="margin-bottom:10px">
+      <strong>${g.nome}</strong> <span class="badge">${g.turma}</span>
+      <p><b>Integrantes:</b> ${g.integrantes}</p>
+      <p><b>Canteiro:</b> ${nomeCanteiro(g.canteiro_id)}</p>
+      <button class="danger no-print" onclick="excluirGrupo('${g.id}')">Excluir</button>
+    </div>`).join(''):'<div class="empty">Nenhum grupo cadastrado.</div>';
+}
+
+function renderHistorico(){
+  const fc=filtroCanteiro.value, fg=filtroGrupo.value;
+  const dados=[...db.registros].filter(r=>(!fc||r.canteiro_id===fc)&&(!fg||r.grupo_id===fg))
+    .sort((a,b)=>b.data.localeCompare(a.data));
+  tabelaHistorico.innerHTML=dados.length?dados.map(r=>`
+    <tr>
+      <td>${formatData(r.data)}</td><td>${r.aluno}</td><td>${nomeGrupo(r.grupo_id)}</td>
+      <td>${nomeCanteiro(r.canteiro_id)}</td><td>${r.irrigacao}</td><td>${r.solo}</td>
+      <td>${r.altura?r.altura+' cm':'—'}</td><td>${r.pragas}</td><td>${r.obs||'—'}</td>
+      <td>${r.foto?`<img class="photo-preview" src="${r.foto}" alt="Foto do canteiro">`:'—'}</td>
+      <td class="no-print"><button class="danger" onclick="excluirRegistro('${r.id}')">Excluir</button></td>
+    </tr>`).join(''):'<tr><td colspan="11" class="empty">Nenhum registro encontrado.</td></tr>';
+}
+
+function gerarRelatorio(){
+  const id=relCanteiro.value || (db.canteiros[0]?.id||'');
+  const c=db.canteiros.find(x=>x.id===id);
+  if(!c){ relatorioConteudo.innerHTML='<div class="empty">Cadastre um canteiro para gerar o relatório.</div>'; return; }
+  relCanteiro.value=id;
+  const regs=db.registros.filter(r=>r.canteiro_id===id).sort((a,b)=>a.data.localeCompare(b.data));
+  const pragas=regs.filter(r=>r.pragas==='Sim').length;
+  const irrigados=regs.filter(r=>r.irrigacao==='Sim').length;
+  const alturas=regs.map(r=>parseFloat(r.altura)).filter(n=>!isNaN(n));
+  const media=alturas.length?(alturas.reduce((a,b)=>a+b,0)/alturas.length).toFixed(1):'—';
+  relatorioConteudo.innerHTML=`
+    <p><b>Canteiro:</b> ${c.nome}</p>
+    <p><b>Cultura:</b> ${c.cultura}</p>
+    <p><b>Data do plantio:</b> ${formatData(c.data)}</p>
+    <p><b>Previsão de colheita:</b> ${c.colheita?formatData(c.colheita):'Não informada'}</p>
+    <p><b>Total de registros:</b> ${regs.length}</p>
+    <p><b>Dias com irrigação registrada:</b> ${irrigados}</p>
+    <p><b>Registros com pragas/doenças:</b> ${pragas}</p>
+    <p><b>Altura média registrada:</b> ${media==='—'?'—':media+' cm'}</p>
+    <h3>Registros do período</h3>
+    ${regs.length?regs.map(r=>`
+      <div style="border-bottom:1px solid #ccc;padding:10px 0">
+        <b>${formatData(r.data)} — ${nomeGrupo(r.grupo_id)}</b>
+        <p>Aluno: ${r.aluno} | Irrigação: ${r.irrigacao} | Solo: ${r.solo} | Pragas: ${r.pragas}</p>
+        <p>${r.obs||'Sem observações.'}</p>
+        ${r.foto?`<img class="photo-preview" src="${r.foto}">`:''}
+      </div>`).join(''):'<p>Nenhum registro para este canteiro.</p>'}
+  `;
+}
+
+function atualizarSelects(){
+  const oc=optionList(db.canteiros,c=>`${c.nome} — ${c.cultura}`);
+  const og=optionList(db.grupos,g=>`${g.nome} — ${g.turma}`);
+  grupoCanteiro.innerHTML='<option value="">Não definido</option>'+oc;
+  regCanteiro.innerHTML=oc;
+  regGrupo.innerHTML=og;
+  filtroCanteiro.innerHTML=optionList(db.canteiros,c=>`${c.nome} — ${c.cultura}`,true);
+  filtroGrupo.innerHTML=optionList(db.grupos,g=>`${g.nome} — ${g.turma}`,true);
+  relCanteiro.innerHTML=oc;
+}
+
+function atualizarKPIs(){
+  kpiCanteiros.textContent=db.canteiros.length;
+  kpiGrupos.textContent=db.grupos.length;
+  kpiRegistros.textContent=db.registros.length;
+  kpiPragas.textContent=db.registros.filter(r=>r.pragas==='Sim').length;
+}
+
+async function excluirCanteiro(id){
+  if(!confirm('Excluir este canteiro? Isso também apaga os registros ligados a ele, para todo mundo.')) return;
+  await sb.from('registros').delete().eq('canteiro_id',id);
+  await sb.from('grupos').update({canteiro_id:null}).eq('canteiro_id',id);
+  const {error} = await sb.from('canteiros').delete().eq('id',id);
+  if(error){ alert('Erro ao excluir canteiro: '+error.message); return; }
+  await carregarDados();
+}
+async function excluirGrupo(id){
+  if(!confirm('Excluir este grupo? Isso também apaga os registros ligados a ele, para todo mundo.')) return;
+  await sb.from('registros').delete().eq('grupo_id',id);
+  const {error} = await sb.from('grupos').delete().eq('id',id);
+  if(error){ alert('Erro ao excluir grupo: '+error.message); return; }
+  await carregarDados();
+}
+async function excluirRegistro(id){
+  if(!confirm('Excluir este registro?')) return;
+  const {error} = await sb.from('registros').delete().eq('id',id);
+  if(error){ alert('Erro ao excluir registro: '+error.message); return; }
+  await carregarDados();
+}
+function formatData(d){ if(!d)return '—'; const [a,m,di]=d.split('-'); return `${di}/${m}/${a}`; }
+
+function exportarDados(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='backup_horta_escolar.json'; a.click(); URL.revokeObjectURL(a.href);
+}
+function importarDados(ev){
+  const file=ev.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=async()=>{
+    try{
+      const novo=JSON.parse(r.result);
+      if(!novo.canteiros||!novo.grupos||!novo.registros) throw new Error();
+      if(novo.canteiros.length){ const {error}=await sb.from('canteiros').upsert(novo.canteiros); if(error) throw error; }
+      if(novo.grupos.length){ const {error}=await sb.from('grupos').upsert(novo.grupos); if(error) throw error; }
+      if(novo.registros.length){ const {error}=await sb.from('registros').upsert(novo.registros); if(error) throw error; }
+      await carregarDados();
+      alert('Dados importados com sucesso.');
+    }catch(err){ alert('Arquivo inválido ou erro ao importar: '+(err.message||'')); }
+  }; r.readAsText(file);
+}
+async function limparTudo(){
+  if(confirm('Tem certeza? Todos os dados de TODOS os alunos serão apagados, para sempre.')){
+    await sb.from('registros').delete().gte('created_at','1970-01-01');
+    await sb.from('grupos').delete().gte('created_at','1970-01-01');
+    await sb.from('canteiros').delete().gte('created_at','1970-01-01');
+    await carregarDados();
+  }
+}
+function atualizarTudo(){
+  atualizarSelects(); atualizarKPIs(); renderCanteiros(); renderGrupos(); renderHistorico(); gerarRelatorio();
+}
+carregarDados();
+</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script>
+</body>
+</html>

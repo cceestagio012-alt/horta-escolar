@@ -1,0 +1,14 @@
+SITE DA HORTA ESCOLAR — COMO PUBLICAR
+
+OPÇÃO MAIS FÁCIL: NETLIFY DROP
+1. No computador, acesse o Netlify Drop.
+2. Extraia este arquivo ZIP.
+3. Arraste a pasta extraída para a área indicada.
+4. O serviço criará um endereço público.
+5. Copie o link e envie aos alunos pelo WhatsApp.
+
+IMPORTANTE
+- O site abrirá normalmente no celular pelo link.
+- Os dados continuam salvos apenas no navegador de cada aparelho.
+- Cada grupo deve usar sempre o mesmo celular ou exportar os dados.
+- No final da unidade, o aluno pode gerar o relatório e salvar em PDF.
