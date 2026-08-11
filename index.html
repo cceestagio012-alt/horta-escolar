@@ -405,7 +405,7 @@ function comprimirImagem(file){
         else if(h>max){w=w*max/h;h=max}
         const c=document.createElement('canvas'); c.width=w;c.height=h;
         c.getContext('2d').drawImage(img,0,0,w,h);
-        resolve(c.toDataURL('image/jpeg',0.72));
+        resolve(c.toDataURL('image/webp',0.72));
       };
       img.src=reader.result;
     };
