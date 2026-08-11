@@ -359,7 +359,14 @@ document.getElementById('formRegistro').addEventListener('submit',async e=>{
   e.preventDefault();
   let foto='';
   const file=regFoto.files[0];
-  if(file) foto=await comprimirImagem(file);
+  if(file){
+    try{
+      foto=await comprimirImagem(file);
+    }catch(err){
+      alert('Não foi possível usar essa foto (' + err.message + '). O registro será salvo sem foto. Dica: tire a foto num formato JPG ou PNG, ou tire um print/screenshot da foto e envie ele.');
+      foto='';
+    }
+  }
   const {error} = await sb.from('registros').insert({
     data:regData.value,
     aluno:regAluno.value.trim(),
@@ -383,11 +390,15 @@ document.getElementById('formRegistro').addEventListener('submit',async e=>{
 });
 
 function comprimirImagem(file){
-  return new Promise(resolve=>{
+  return new Promise((resolve,reject)=>{
+    const timeout=setTimeout(()=>reject(new Error('demorou demais para processar a foto')),15000);
     const reader=new FileReader();
+    reader.onerror=()=>{ clearTimeout(timeout); reject(new Error('não foi possível ler o arquivo')); };
     reader.onload=()=>{
       const img=new Image();
+      img.onerror=()=>{ clearTimeout(timeout); reject(new Error('formato de imagem não compatível com o navegador')); };
       img.onload=()=>{
+        clearTimeout(timeout);
         const max=900;
         let w=img.width,h=img.height;
         if(w>h && w>max){h=h*max/w;w=max}
