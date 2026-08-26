@@ -4,80 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema da Horta Escolar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4f7f2;
+  --bg:#f3f6f1;
   --card:#ffffff;
-  --text:#1f2d1f;
-  --muted:#667766;
-  --accent:#2f7d32;
-  --accent2:#dff0df;
-  --danger:#b3261e;
-  --border:#d8e2d5;
+  --text:#1c2b1e;
+  --muted:#657266;
+  --accent:#2f8132;
+  --accent-dark:#1f5c22;
+  --accent-light:#e7f4e6;
+  --accent-soft:#f1f8ef;
+  --danger:#d1453b;
+  --danger-light:#fbebea;
+  --border:#e3e9e0;
+  --shadow:0 1px 2px rgba(20,40,20,.04), 0 8px 24px rgba(20,40,20,.06);
+  --radius:14px;
 }
 *{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:'Inter',Arial,Helvetica,sans-serif;
   background:var(--bg);
   color:var(--text);
+  -webkit-font-smoothing:antialiased;
 }
+h1,h2,h3{font-family:'Poppins','Inter',sans-serif}
 header{
-  background:linear-gradient(135deg,#2f7d32,#4f9f52);
+  background:linear-gradient(135deg,#276b2a,#3f9a43 55%,#5cb860);
   color:#fff;
-  padding:22px 16px;
+  padding:28px 16px 26px;
+  box-shadow:0 4px 18px rgba(31,92,34,.18);
 }
-header h1{margin:0 0 6px;font-size:1.65rem}
-header p{margin:0;opacity:.95}
+header .container{display:flex;align-items:center;gap:14px}
+header .logo{
+  width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.18);border-radius:14px;font-size:1.6rem;
+}
+header h1{margin:0 0 4px;font-size:1.5rem;font-weight:700;letter-spacing:-.01em}
+header p{margin:0;opacity:.92;font-size:.92rem}
 .container{max-width:1100px;margin:auto;padding:16px}
 .tabs{
-  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px
+  display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;
+  position:sticky;top:0;z-index:10;background:var(--bg);
+  padding:12px 0 4px;-ms-overflow-style:none;scrollbar-width:none;
 }
+.tabs::-webkit-scrollbar{display:none}
 .tabs button{
-  border:0;background:#e7efe4;padding:10px 14px;border-radius:10px;
-  cursor:pointer;font-weight:700;color:#234223
+  border:0;background:var(--card);padding:9px 16px;border-radius:999px;
+  cursor:pointer;font-weight:600;color:var(--muted);font-size:.92rem;white-space:nowrap;
+  border:1px solid var(--border);transition:all .15s ease;flex:none;
 }
-.tabs button.active{background:var(--accent);color:white}
-.section{display:none}
+.tabs button:hover{background:var(--accent-soft);color:var(--accent-dark)}
+.tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 10px rgba(47,129,50,.28)}
+.section{display:none;animation:fadeIn .25s ease}
 .section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .grid{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px
 }
 .card{
-  background:var(--card);border:1px solid var(--border);border-radius:14px;
-  padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04)
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow)
 }
-.card h2,.card h3{margin-top:0}
-label{display:block;font-weight:700;margin:10px 0 6px}
+.card h2,.card h3{margin-top:0;font-weight:700}
+.card h2{font-size:1.15rem}
+label{display:block;font-weight:600;margin:14px 0 6px;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
 input,select,textarea{
-  width:100%;padding:10px;border:1px solid #bfcdbb;border-radius:8px;
-  font-size:1rem;background:#fff
+  width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:.98rem;background:#fbfdfa;font-family:inherit;color:var(--text);transition:border-color .15s ease,box-shadow .15s ease
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,129,50,.14);background:#fff
 }
 textarea{min-height:90px;resize:vertical}
 button.primary,button.secondary,button.danger{
-  padding:10px 14px;border:0;border-radius:9px;font-weight:700;cursor:pointer;margin-top:12px
+  padding:11px 18px;border:0;border-radius:10px;font-weight:700;cursor:pointer;margin-top:14px;
+  font-size:.95rem;font-family:inherit;transition:transform .1s ease,box-shadow .15s ease,background .15s ease
 }
-button.primary{background:var(--accent);color:#fff}
-button.secondary{background:#e7efe4;color:#234223}
-button.danger{background:var(--danger);color:#fff}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
+button.primary{background:var(--accent);color:#fff;box-shadow:0 3px 10px rgba(47,129,50,.3)}
+button.primary:hover{background:var(--accent-dark)}
+button.secondary{background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--border)}
+button.secondary:hover{background:var(--accent-light)}
+button.danger{background:var(--danger-light);color:var(--danger)}
+button.danger:hover{background:var(--danger);color:#fff}
+button:active{transform:scale(.98)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .kpis{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px
 }
 .kpi{
-  background:#fff;border-left:6px solid var(--accent);border-radius:12px;
-  padding:14px;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border)
+  background:var(--card);border-radius:var(--radius);
+  padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:6px
 }
-.kpi strong{display:block;font-size:1.6rem}
+.kpi .kpi-icon{font-size:1.3rem}
+.kpi span{color:var(--muted);font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.kpi strong{display:block;font-size:1.9rem;font-family:'Poppins',sans-serif;color:var(--accent-dark)}
 table{width:100%;border-collapse:collapse;background:#fff}
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
-th{background:#edf5ea}
-.table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--border)}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent2);font-size:.85rem}
+th,td{padding:11px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;font-size:.92rem}
+th{background:var(--accent-soft);color:var(--accent-dark);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+tbody tr:hover{background:#fafcf9}
+.table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow)}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--accent-light);color:var(--accent-dark);font-size:.8rem;font-weight:600}
 .muted{color:var(--muted)}
-.photo-preview{max-width:140px;max-height:100px;border-radius:8px;display:block;margin-top:8px}
-.empty{padding:20px;text-align:center;color:var(--muted)}
-footer{text-align:center;color:var(--muted);padding:25px 10px}
+.photo-preview{max-width:140px;max-height:100px;border-radius:8px;display:block;margin-top:8px;object-fit:cover}
+.empty{padding:36px 20px;text-align:center;color:var(--muted);font-size:.95rem}
+footer{text-align:center;color:var(--muted);padding:30px 10px;font-size:.85rem}
 @media print{
   header,.tabs,.no-print,footer{display:none!important}
   body{background:#fff}
@@ -92,41 +127,61 @@ footer{text-align:center;color:var(--muted);padding:25px 10px}
 <body>
 <header>
   <div class="container">
-    <h1>🌱 Sistema da Horta Escolar</h1>
-    <p>Cadastro de canteiros, grupos, registros diários, fotos e relatórios.</p>
+    <div class="logo">🌱</div>
+    <div>
+      <h1>Sistema da Horta Escolar</h1>
+      <p>Cadastro de canteiros, grupos, registros diários, fotos e relatórios.</p>
+    </div>
   </div>
 </header>
 
 <div class="container">
   <div class="tabs no-print">
-    <button class="active" data-tab="inicio">Início</button>
-    <button data-tab="canteiros">Canteiros</button>
-    <button data-tab="grupos">Grupos</button>
-    <button data-tab="registros">Registro diário</button>
-    <button data-tab="historico">Histórico</button>
-    <button data-tab="relatorios">Relatórios</button>
+    <button class="active" data-tab="inicio">🏠 Início</button>
+    <button data-tab="canteiros">🌱 Canteiros</button>
+    <button data-tab="grupos">👥 Grupos</button>
+    <button data-tab="registros">📝 Registro diário</button>
+    <button data-tab="historico">📜 Histórico</button>
+    <button data-tab="relatorios">📊 Relatórios</button>
   </div>
 
   <section id="inicio" class="section active">
     <div class="kpis">
-      <div class="kpi"><span>Canteiros</span><strong id="kpiCanteiros">0</strong></div>
-      <div class="kpi"><span>Grupos</span><strong id="kpiGrupos">0</strong></div>
-      <div class="kpi"><span>Registros</span><strong id="kpiRegistros">0</strong></div>
-      <div class="kpi"><span>Com pragas</span><strong id="kpiPragas">0</strong></div>
+      <div class="kpi"><span>🌱 Canteiros</span><strong id="kpiCanteiros">0</strong></div>
+      <div class="kpi"><span>👥 Grupos</span><strong id="kpiGrupos">0</strong></div>
+      <div class="kpi"><span>📝 Registros</span><strong id="kpiRegistros">0</strong></div>
+      <div class="kpi"><span>🐛 Com pragas</span><strong id="kpiPragas">0</strong></div>
     </div>
     <div class="card">
       <h2>Como usar</h2>
       <p>1. Cadastre os canteiros e os grupos. 2. Faça o registro diário pelo celular. 3. Consulte o histórico. 4. Gere e imprima o relatório.</p>
-      <p class="muted">Os dados ficam salvos neste navegador. Para usar em outro aparelho, utilize “Exportar dados” e depois “Importar dados”.</p>
+      <p class="muted">Os dados são compartilhados entre todos os alunos, em tempo real — qualquer pessoa com o link vê e lança informações.</p>
       <div class="actions no-print">
         <button class="secondary" onclick="exportarDados()">Exportar dados</button>
-        <label style="margin:0">
+        <label style="margin:0" id="btnImportar">
           <input id="importFile" type="file" accept=".json" style="display:none" onchange="importarDados(event)">
           <button class="secondary" type="button" onclick="document.getElementById('importFile').click()">Importar dados</button>
         </label>
-        <button class="danger" onclick="limparTudo()">Apagar todos os dados (de todo mundo)</button>
+        <button id="btnLimparTudo" class="danger" onclick="limparTudo()">Apagar todos os dados (de todo mundo)</button>
       </div>
       <p id="statusConexao" class="muted no-print"></p>
+    </div>
+
+    <div class="card no-print" id="cardLogin">
+      <h2>Área do professor</h2>
+      <div id="loginForm">
+        <p class="muted">Entre com a senha do professor pra liberar exclusão de itens, apagar tudo e importar backups.</p>
+        <label>Senha</label>
+        <input id="senhaProfessor" type="password" placeholder="Senha do professor">
+        <div class="actions">
+          <button class="primary" onclick="loginProfessor()">Entrar</button>
+        </div>
+        <p id="loginErro" class="muted" style="color:var(--danger);display:none"></p>
+      </div>
+      <div id="logoutForm" style="display:none">
+        <p class="muted">✅ Professor conectado — ações de exclusão liberadas.</p>
+        <button class="secondary" onclick="logoutProfessor()">Sair</button>
+      </div>
     </div>
   </section>
 
@@ -281,10 +336,11 @@ footer{text-align:center;color:var(--muted);padding:25px 10px}
   </section>
 </div>
 
-<footer>Sistema local da Horta Escolar — dados armazenados no navegador.</footer>
+<footer>Sistema da Horta Escolar — dados compartilhados entre todos os alunos.</footer>
 
 <script>
 let db = {canteiros:[],grupos:[],registros:[]};
+let isAdmin = false;
 
 function hoje(){ return new Date().toISOString().slice(0,10); }
 document.getElementById('canteiroData').value = hoje();
@@ -306,6 +362,43 @@ async function apiFetch(url, options){
   }
   if(resp.status===204) return null;
   return resp.json();
+}
+
+async function checarAdmin(){
+  try{
+    const r = await apiFetch('/api/me');
+    isAdmin = !!(r && r.admin);
+  }catch{ isAdmin = false; }
+  atualizarAreaProfessor();
+}
+
+function atualizarAreaProfessor(){
+  document.getElementById('loginForm').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('logoutForm').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('btnLimparTudo').style.display = isAdmin ? 'inline-block' : 'none';
+  document.getElementById('btnImportar').style.display = isAdmin ? 'inline-block' : 'none';
+}
+
+async function loginProfessor(){
+  const erroEl = document.getElementById('loginErro');
+  erroEl.style.display = 'none';
+  try{
+    await apiFetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({senha: document.getElementById('senhaProfessor').value})});
+    document.getElementById('senhaProfessor').value = '';
+    isAdmin = true;
+    atualizarAreaProfessor();
+    atualizarTudo();
+  }catch(erro){
+    erroEl.textContent = 'Senha incorreta.';
+    erroEl.style.display = 'block';
+  }
+}
+
+async function logoutProfessor(){
+  await apiFetch('/api/logout', {method:'POST'});
+  isAdmin = false;
+  atualizarAreaProfessor();
+  atualizarTudo();
 }
 
 async function carregarDados(){
@@ -453,7 +546,7 @@ function renderCanteiros(){
       <strong>${c.nome}</strong> <span class="badge">${c.cultura}</span>
       <p class="muted">Plantio: ${formatData(c.data)} ${c.colheita?'| Colheita prevista: '+formatData(c.colheita):''}</p>
       <p>${c.obs||''}</p>
-      <button class="danger no-print" onclick="excluirCanteiro('${c.id}')">Excluir</button>
+      ${isAdmin?`<button class="danger no-print" onclick="excluirCanteiro('${c.id}')">Excluir</button>`:''}
     </div>`).join(''):'<div class="empty">Nenhum canteiro cadastrado.</div>';
 }
 
@@ -463,7 +556,7 @@ function renderGrupos(){
       <strong>${g.nome}</strong> <span class="badge">${g.turma}</span>
       <p><b>Integrantes:</b> ${g.integrantes}</p>
       <p><b>Canteiro:</b> ${nomeCanteiro(g.canteiro_id)}</p>
-      <button class="danger no-print" onclick="excluirGrupo('${g.id}')">Excluir</button>
+      ${isAdmin?`<button class="danger no-print" onclick="excluirGrupo('${g.id}')">Excluir</button>`:''}
     </div>`).join(''):'<div class="empty">Nenhum grupo cadastrado.</div>';
 }
 
@@ -477,7 +570,7 @@ function renderHistorico(){
       <td>${nomeCanteiro(r.canteiro_id)}</td><td>${r.irrigacao}</td><td>${r.solo}</td>
       <td>${r.altura?r.altura+' cm':'—'}</td><td>${r.pragas}</td><td>${r.obs||'—'}</td>
       <td>${r.foto?`<img class="photo-preview" src="${r.foto}" alt="Foto do canteiro">`:'—'}</td>
-      <td class="no-print"><button class="danger" onclick="excluirRegistro('${r.id}')">Excluir</button></td>
+      <td class="no-print">${isAdmin?`<button class="danger" onclick="excluirRegistro('${r.id}')">Excluir</button>`:'—'}</td>
     </tr>`).join(''):'<tr><td colspan="11" class="empty">Nenhum registro encontrado.</td></tr>';
 }
 
@@ -576,6 +669,7 @@ async function limparTudo(){
 function atualizarTudo(){
   atualizarSelects(); atualizarKPIs(); renderCanteiros(); renderGrupos(); renderHistorico(); gerarRelatorio();
 }
+checarAdmin();
 carregarDados();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script>

@@ -1,13 +1,49 @@
+import os
 from datetime import date, datetime
 from decimal import Decimal
+from functools import wraps
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
+from werkzeug.security import check_password_hash
 
 from .db import get_conn
 
 bp = Blueprint("api", __name__)
 
 FOTO_MAX_BASE64 = 350_000  # ~260KB decodidos: mantem o banco leve
+
+
+def admin_obrigatorio(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get("admin"):
+            return jsonify({"erro": "acao restrita ao professor"}), 401
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
+@bp.route("/login", methods=["POST"])
+def login():
+    d = request.get_json(force=True, silent=True) or {}
+    senha = d.get("senha") or ""
+    hash_esperado = os.environ.get("ADMIN_PASSWORD_HASH", "")
+    if not hash_esperado or not check_password_hash(hash_esperado, senha):
+        return jsonify({"erro": "senha incorreta"}), 401
+    session["admin"] = True
+    session.permanent = True
+    return jsonify({"ok": True})
+
+
+@bp.route("/logout", methods=["POST"])
+def logout():
+    session.pop("admin", None)
+    return jsonify({"ok": True})
+
+
+@bp.route("/me", methods=["GET"])
+def me():
+    return jsonify({"admin": bool(session.get("admin"))})
 
 
 def serialize(obj):
@@ -58,6 +94,7 @@ def criar_canteiro():
 
 
 @bp.route("/canteiros/<id>", methods=["DELETE"])
+@admin_obrigatorio
 def excluir_canteiro(id):
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("DELETE FROM registros WHERE canteiro_id=%s", (id,))
@@ -97,6 +134,7 @@ def criar_grupo():
 
 
 @bp.route("/grupos/<id>", methods=["DELETE"])
+@admin_obrigatorio
 def excluir_grupo(id):
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("DELETE FROM registros WHERE grupo_id=%s", (id,))
@@ -154,6 +192,7 @@ def criar_registro():
 
 
 @bp.route("/registros/<id>", methods=["DELETE"])
+@admin_obrigatorio
 def excluir_registro(id):
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("DELETE FROM registros WHERE id=%s", (id,))
@@ -175,6 +214,7 @@ def exportar():
 
 
 @bp.route("/importar", methods=["POST"])
+@admin_obrigatorio
 def importar():
     d = request.get_json(force=True, silent=True) or {}
     with get_conn() as conn, conn.cursor() as cur:
@@ -227,6 +267,7 @@ def importar():
 
 
 @bp.route("/limpar-tudo", methods=["POST"])
+@admin_obrigatorio
 def limpar_tudo():
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("DELETE FROM registros")
