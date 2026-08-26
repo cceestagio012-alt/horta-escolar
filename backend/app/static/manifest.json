@@ -1,0 +1,8 @@
+{
+  "name": "Sistema da Horta Escolar",
+  "short_name": "Horta Escolar",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f8f2",
+  "theme_color": "#2f7d32"
+}

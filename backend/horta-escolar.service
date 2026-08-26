@@ -1,0 +1,23 @@
+[Unit]
+Description=Horta Escolar - Gunicorn
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+User=hortaescolar
+Group=www-data
+WorkingDirectory=/var/www/projetos/horta-escolar
+EnvironmentFile=/var/www/projetos/horta-escolar/.env
+ExecStart=/var/www/projetos/horta-escolar/venv/bin/gunicorn -c gunicorn.conf.py "run:app"
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+Restart=on-failure
+RestartSec=5
+MemoryMax=250M
+MemoryHigh=200M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

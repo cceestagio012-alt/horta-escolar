@@ -2,18 +2,26 @@
 
 Site público para os alunos cadastrarem canteiros, grupos e registros diários da horta escolar, com fotos e relatórios em PDF.
 
-Os dados ficam salvos em um banco de dados compartilhado no [Supabase](https://supabase.com) — qualquer aluno com o link vê e lança dados, sem necessidade de login.
+## Hospedagem (atual)
 
-## Estrutura
+Tudo roda na VPS compartilhada, junto com o CETIPE:
 
-- `index.html` — todo o site (HTML, CSS e JavaScript).
-- `schema.sql` — script para criar as tabelas no Supabase (`canteiros`, `grupos`, `registros`).
-- `manifest.json` / `service-worker.js` — permitem instalar o site como app (PWA) no celular.
+- **App**: Flask (`backend/`), servido por Gunicorn, systemd (`horta-escolar.service`)
+- **Banco**: PostgreSQL local na VPS (`horta_escolar_db`)
+- **Proxy**: Nginx (`horta.sistemacetipe.com.br`)
+- **Caminho na VPS**: `/var/www/projetos/horta-escolar`
 
-## Publicação
+Esta pasta do repositório (`backend/`) é o código-fonte de referência — o deploy é feito copiando os arquivos pra VPS (sem git na VPS, mesmo padrão do CadastroPro).
 
-O site é hospedado pelo GitHub Pages, publicado a partir da branch `main`.
+### Estrutura do backend
+- `backend/app/api.py` — rotas da API (`/api/canteiros`, `/api/grupos`, `/api/registros`, `/api/importar`, `/api/exportar`, `/api/limpar-tudo`)
+- `backend/app/static/index.html` — frontend (fala com a API via `fetch`)
+- `backend/schema.sql` — schema do PostgreSQL
+- `backend/horta-escolar.service` — unidade systemd
+- `backend/nginx-horta-escolar` — configuração do Nginx
 
-## Acesso ao banco
+### Limites de tamanho (fotos)
+Fotos são comprimidas no navegador (WebP, até 700px, qualidade adaptativa) com teto de ~260KB por foto, validado também no backend, pra manter o banco leve e não pesar a VPS compartilhada. O serviço systemd também tem teto de memória (250M) e CPU (50%).
 
-⚠️ Como o acesso é livre (sem login), qualquer pessoa com o link do site pode ler, criar, editar e apagar dados. Isso foi uma escolha consciente para facilitar o uso em sala. Se no futuro for necessário restringir, adicionar autenticação no Supabase e ajustar as políticas de RLS em `schema.sql`.
+## Histórico
+Anteriormente hospedado em GitHub Pages + Supabase; migrado para a VPS própria em 2026-08-26 para manter tudo centralizado e sob controle direto.
