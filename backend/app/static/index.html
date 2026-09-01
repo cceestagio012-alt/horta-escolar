@@ -569,17 +569,39 @@ function renderHistorico(){
       <td>${formatData(r.data)}</td><td>${r.aluno}</td><td>${nomeGrupo(r.grupo_id)}</td>
       <td>${nomeCanteiro(r.canteiro_id)}</td><td>${r.irrigacao}</td><td>${r.solo}</td>
       <td>${r.altura?r.altura+' cm':'—'}</td><td>${r.pragas}</td><td>${r.obs||'—'}</td>
-      <td>${r.foto?`<img class="photo-preview" src="${r.foto}" alt="Foto do canteiro">`:'—'}</td>
+      <td>${r.tem_foto?`<button class="secondary" style="margin:0;padding:6px 10px;font-size:.82rem" onclick="verFoto('${r.id}', this)">Ver foto</button>`:'—'}</td>
       <td class="no-print">${isAdmin?`<button class="danger" onclick="excluirRegistro('${r.id}')">Excluir</button>`:'—'}</td>
     </tr>`).join(''):'<tr><td colspan="11" class="empty">Nenhum registro encontrado.</td></tr>';
 }
 
-function gerarRelatorio(){
+async function verFoto(id, btn){
+  btn.disabled = true; btn.textContent = 'Carregando...';
+  try{
+    const r = await apiFetch('/api/registros/'+id+'/foto');
+    const img = document.createElement('img');
+    img.className = 'photo-preview'; img.alt = 'Foto do canteiro'; img.style.cursor = 'zoom-in';
+    img.src = r.foto;
+    img.onclick = ()=>window.open(r.foto, '_blank');
+    btn.replaceWith(img);
+  }catch(erro){
+    btn.disabled = false; btn.textContent = 'Erro, tentar de novo';
+  }
+}
+
+async function gerarRelatorio(){
   const id=relCanteiro.value || (db.canteiros[0]?.id||'');
   const c=db.canteiros.find(x=>x.id===id);
   if(!c){ relatorioConteudo.innerHTML='<div class="empty">Cadastre um canteiro para gerar o relatório.</div>'; return; }
   relCanteiro.value=id;
-  const regs=db.registros.filter(r=>r.canteiro_id===id).sort((a,b)=>a.data.localeCompare(b.data));
+  relatorioConteudo.innerHTML='<div class="empty">Carregando relatório...</div>';
+  let regs;
+  try{
+    regs = await apiFetch('/api/registros?canteiro_id='+encodeURIComponent(id)+'&comFotos=1');
+  }catch(erro){
+    relatorioConteudo.innerHTML='<div class="empty">Erro ao carregar relatório: '+erro.message+'</div>';
+    return;
+  }
+  regs = regs.sort((a,b)=>a.data.localeCompare(b.data));
   const pragas=regs.filter(r=>r.pragas==='Sim').length;
   const irrigados=regs.filter(r=>r.irrigacao==='Sim').length;
   const alturas=regs.map(r=>parseFloat(r.altura)).filter(n=>!isNaN(n));

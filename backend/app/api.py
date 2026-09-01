@@ -144,12 +144,37 @@ def excluir_grupo(id):
 
 
 # ── Registros ────────────────────────────────────────────────────────────
+CAMPOS_REGISTRO_LEVE = (
+    "id,data,aluno,turma,grupo_id,canteiro_id,irrigacao,solo,crescimento,"
+    "altura,pragas,capina,adubacao,obs,created_at,(foto<>'') as tem_foto"
+)
+
+
 @bp.route("/registros", methods=["GET"])
 def listar_registros():
+    canteiro_id = request.args.get("canteiro_id")
+    incluir_foto = request.args.get("comFotos") == "1"
+    campos = "*" if incluir_foto else CAMPOS_REGISTRO_LEVE
+    query = f"SELECT {campos} FROM registros"
+    params = []
+    if canteiro_id:
+        query += " WHERE canteiro_id=%s"
+        params.append(canteiro_id)
+    query += " ORDER BY data DESC"
     with get_conn() as conn, conn.cursor() as cur:
-        cur.execute("SELECT * FROM registros ORDER BY data DESC")
+        cur.execute(query, params)
         rows = cur.fetchall()
     return jsonify(serialize(rows))
+
+
+@bp.route("/registros/<id>/foto", methods=["GET"])
+def foto_registro(id):
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("SELECT foto FROM registros WHERE id=%s", (id,))
+        row = cur.fetchone()
+    if not row:
+        return jsonify({"erro": "nao encontrado"}), 404
+    return jsonify({"foto": row["foto"] or ""})
 
 
 @bp.route("/registros", methods=["POST"])
